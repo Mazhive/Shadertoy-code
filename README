@@ -1,12 +1,16 @@
 # ShaderToyViewer
 
-## Overzicht
 
-ShaderToyViewer is een C++ desktopapplicatie ontworpen om fragment shaders, geschreven in een stijl die compatibel is met Shadertoy.com, lokaal uit te voeren en te bekijken. Het biedt een eenvoudige interface om `.glsl` of `.frag` bestanden te laden en de resulterende visuals in realtime te zien. De viewer ondersteunt de standaard Shadertoy uniforms zoals `iResolution`, `iTime`, en `iMouse`.
+ShaderToyViewer is een C++ desktopapplicatie ontworpen om fragment shaders, geschreven in een stijl die compatibel is met Shadertoy.com, 
+lokaal uit te voeren en te bekijken. Het biedt een eenvoudige interface om `.glsl` of `.frag` bestanden te laden en de resulterende visuals in realtime te zien. 
+De viewer ondersteunt de standaard Shadertoy uniforms zoals `iResolution`, `iTime`, en `iMouse`.
 
-Deze applicatie is ideaal voor shader-ontwikkelaars die hun creaties offline willen testen of demonstreren, of voor iedereen die geïnteresseerd is in het verkennen van de wereld van shaders zonder de noodzaak van een browser of een volledige game-engine.
+Deze applicatie is ideaal voor shader-ontwikkelaars die hun creaties offline willen testen of demonstreren, 
+of voor iedereen die geïnteresseerd is in het verkennen van de wereld van shaders zonder de noodzaak van een browser of een volledige game-engine.
 
-**Belangrijk:** Momenteel ondersteunt de viewer voornamelijk **single-pass 'Image' shaders** van Shadertoy. Shaders die gebruikmaken van multi-pass rendering via `Buffer A`, `Buffer B`, etc., of die texture inputs via `iChannel0` t/m `iChannel3` vereisen (tenzij je de C++ code aanpast om deze texturen te laden), zullen waarschijnlijk niet correct of helemaal niet werken.
+**Belangrijk:** Momenteel ondersteunt de viewer voornamelijk **single-pass 'Image' shaders** van Shadertoy. 
+Shaders die gebruikmaken van multi-pass rendering via `Buffer A`, `Buffer B`, etc., of die texture inputs via `iChannel0` t/m `iChannel3` vereisen (tenzij je de C++ code aanpast om deze texturen te laden),
+zullen waarschijnlijk niet correct of helemaal niet werken.
 
 ## Features
 
