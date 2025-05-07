@@ -1,0 +1,45 @@
+LINUX
+
+
+C++ Compiler
+CMake
+GLFW
+GLAD (not strictly an installable dependency, but needs to be generated and included)
+Dear ImGui (source files included in the project)
+Tiny File Dialogs (source files included in the project)
+(Optional but recommended) GLM, if they decide to use it later.
+
+WINDOWS
+
+Add Windows-specific notes for:
+C++ Compiler (MinGW, MSVC)
+CMake (installer)
+GLFW (pre-compiled binaries, vcpkg)
+OpenGL (drivers)
+Filesystem (potential path issues, though std::filesystem should handle it)
+Linking (different flags/libraries for MSVC vs. MinGW)
+Update the "Algemene Compileerstappen" if necessary for Windows.
+
+
+
+De code die we hebben ontwikkeld (main.cpp en de CMakeLists.txt) is grotendeels geschikt om op Windows te compileren, maar er zijn een paar belangrijke aandachtspunten die al in het document "Benodigde Dependencies voor ShaderToyViewer (Windows-specifiek)" (dat je open hebt staan) worden genoemd.
+
+Hier is een samenvatting van de belangrijkste punten voor Windows:
+
+C++ Compiler: Je hebt een Windows-compatibele C++ compiler nodig, zoals:
+
+MinGW-w64 (vaak gebruikt met CMake en Makefiles)
+Microsoft Visual C++ (MSVC) (als je Visual Studio gebruikt)
+CMake Generator: Wanneer je CMake draait, moet je mogelijk de juiste "generator" specificeren voor je gekozen compiler/IDE:
+
+Voor MinGW: cmake -G "MinGW Makefiles" ..
+Voor Visual Studio: cmake .. (kiest vaak automatisch) of cmake -G "Visual Studio 17 2022" .. (vervang versie indien nodig).
+GLFW Installatie op Windows: Dit is vaak het lastigste punt.
+
+Je kunt de pre-compiled binaries downloaden van glfw.org. Je moet dan de header-bestanden (.h) in je include-paden opnemen en linken met het juiste .lib-bestand (glfw3.lib voor MSVC, libglfw3dll.a voor MinGW). De glfw3.dll moet dan bij je executable staan of in de systeem PATH.
+Aanbevolen voor Windows: Gebruik een package manager zoals vcpkg. Na installatie van vcpkg, kun je GLFW installeren met vcpkg install glfw3. Als je CMake dan draait met de vcpkg toolchain file (-DCMAKE_TOOLCHAIN_FILE=[pad/naar/vcpkg]/scripts/buildsystems/vcpkg.cmake), vindt CMake GLFW meestal automatisch. Dit staat ook beschreven in het document.
+OpenGL Drivers: Zorg voor up-to-date grafische drivers.
+
+De C++ code zelf (main.cpp): Deze code is geschreven om redelijk platformonafhankelijk te zijn. Functies zoals std::filesystem vereisen C++17, wat door moderne compilers op Windows ondersteund wordt. Er zouden geen grote wijzigingen aan main.cpp zelf nodig moeten zijn.
+
+CMakeLists.txt: De CMakeLists.txt die we hebben opgesteld, probeert al cross-platform te zijn. find_package(glfw3 REQUIRED) en find_package(OpenGL REQUIRED) zouden moeten werken. De belangrijkste uitdaging is ervoor te zorgen dat CMake de GLFW-bibliotheek en headers kan vinden, wat vcpkg sterk vereenvoudigt. Zonder vcpkg moet je mogelijk de CMAKE_INCLUDE_PATH en CMAKE_LIBRARY_PATH aanpassen of find_library en find_path gebruiken in CMake als GLFW niet op een standaardlocatie staat.
