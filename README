@@ -1,0 +1,108 @@
+# ShaderToyViewer
+
+## Overzicht
+
+ShaderToyViewer is een C++ desktopapplicatie ontworpen om fragment shaders, geschreven in een stijl die compatibel is met Shadertoy.com, lokaal uit te voeren en te bekijken. Het biedt een eenvoudige interface om `.glsl` of `.frag` bestanden te laden en de resulterende visuals in realtime te zien. De viewer ondersteunt de standaard Shadertoy uniforms zoals `iResolution`, `iTime`, en `iMouse`.
+
+Deze applicatie is ideaal voor shader-ontwikkelaars die hun creaties offline willen testen of demonstreren, of voor iedereen die geïnteresseerd is in het verkennen van de wereld van shaders zonder de noodzaak van een browser of een volledige game-engine.
+
+**Belangrijk:** Momenteel ondersteunt de viewer voornamelijk **single-pass 'Image' shaders** van Shadertoy. Shaders die gebruikmaken van multi-pass rendering via `Buffer A`, `Buffer B`, etc., of die texture inputs via `iChannel0` t/m `iChannel3` vereisen (tenzij je de C++ code aanpast om deze texturen te laden), zullen waarschijnlijk niet correct of helemaal niet werken.
+
+## Features
+
+* Laadt en rendert GLSL fragment shaders (`.glsl`, `.frag`).
+* Automatische "wrapping" van Shadertoy-stijl `mainImage(out vec4, in vec2)` functies.
+* Ondersteuning voor standaard Shadertoy uniforms:
+    * `uniform vec2 iResolution;` (resolutie van het venster)
+    * `uniform float iTime;` (tijd in seconden)
+    * `uniform vec4 iMouse;` (xy: huidige muispositie, zw: positie van laatste klik, teken van z/w geeft knopstatus aan)
+* Menu-interface (gemaakt met Dear ImGui) om:
+    * Shaderbestanden te openen.
+    * De applicatie te sluiten.
+* Keyboard shortcuts:
+    * `O`: Open bestandsdialoog.
+    * `ESC`: Sluit applicatie.
+* Automatisch aanmaken van een `shaders/default.vert` (vertex shader) bestand als deze niet bestaat, om de basisfunctionaliteit te garanderen.
+* Robuuste foutafhandeling voor het laden van shaders.
+
+## Benodigde Dependencies en Compilatie
+
+Om ShaderToyViewer te compileren, heb je een C++ compiler (C++17 of hoger), CMake, en de GLFW bibliotheek nodig. De andere bibliotheken (GLAD, Dear ImGui, Tiny File Dialogs) zijn als broncode in het project opgenomen.
+
+Raadpleeg het document `BENODIGDE_DEPENDENCIES.md` (of het document met ID `project_dependencies_nl` als je dit via een interactieve sessie hebt ontvangen) voor gedetailleerde instructies over het installeren van deze dependencies op Linux, Windows, en macOS, en voor de algemene compileerstappen met CMake.
+
+**Korte compileerstappen (na installatie dependencies):**
+
+1.  Navigeer naar de root van het project in je terminal.
+2.  Maak een `build` directory aan (als die nog niet bestaat) en ga erin:
+    ```bash
+    mkdir build
+    cd build
+    ```
+3.  Draai CMake om het project te configureren (verwijst naar `CMakeLists.txt` in de bovenliggende map):
+    ```bash
+    cmake ..
+    ```
+    *Op Windows moet je mogelijk een generator specificeren, bv. `cmake -G "MinGW Makefiles" ..` of `cmake -G "Visual Studio 17 2022" ..`.*
+4.  Compileer het project:
+    ```bash
+    cmake --build .
+    ```
+    *(Of `make` op Linux/macOS als je Makefiles hebt gegenereerd, of bouw via Visual Studio op Windows).*
+
+De executable (`shadertoy_viewer` of `shadertoy_viewer.exe`) zal in de `build` map verschijnen.
+
+## Gebruik
+
+1.  **Start de Applicatie:** Voer de gecompileerde executable uit.
+2.  **Standaard Shader:** Bij het opstarten probeert de applicatie `shaders/default.frag` te laden. Als `shaders/default.vert` niet bestaat, wordt deze aangemaakt.
+3.  **Shader Laden:**
+    * Klik op "File" -> "Open File..." in de menubalk.
+    * Of druk op de `O`-toets.
+    * Navigeer naar je shaderbestand (`.glsl` of `.frag`) en selecteer het.
+    * De viewer zal proberen de shader te laden en te renderen. Foutmeldingen verschijnen in de console en eventueel als een popup.
+4.  **Interactie:**
+    * **Rotatie (voor shaders die `iMouse.xy` gebruiken voor rotatie):** Beweeg de muis over het venster.
+    * **Klik-interactie (voor shaders die `iMouse.zw` gebruiken):** Klik met de linkermuisknop in het venster. De `iMouse.zw` uniform bevat de coördinaten waar de klik *begon*. Het teken van `iMouse.z` (en `iMouse.w`) geeft aan of de knop momenteel ingedrukt is (positief) of losgelaten (negatief, waarbij de waarde de laatste klikpositie is).
+5.  **Sluiten:**
+    * Klik op "File" -> "Close App".
+    * Of druk op de `ESC`-toets.
+    * Of sluit het venster op de gebruikelijke manier.
+
+## Compatibiliteit met Shadertoy Code
+
+De viewer is primair ontworpen voor **single-pass 'Image' shaders** van Shadertoy.
+
+**Wat werkt goed:**
+
+* Shaders die alleen de `mainImage(out vec4 fragColor, in vec2 fragCoord)` functie definiëren.
+* Shaders die de uniforms `iResolution`, `iTime`, en `iMouse` gebruiken.
+
+**Wat werkt (nog) NIET of beperkt:**
+
+* **Multi-Pass Shaders (`Buffer A`, `Buffer B`, etc.):** Deze vereisen een geavanceerdere render pipeline die de viewer momenteel niet heeft. Alleen de code in de "Image" tab van zo'n Shadertoy zal worden gebruikt, wat meestal niet het gewenste resultaat geeft.
+* **Texture Inputs (`iChannel0` - `iChannel3`):** De C++ code laadt momenteel geen externe texturen of de output van andere buffers voor deze kanalen. Hoewel de uniforms gedeclareerd worden in de shader wrapper, zullen ze geen geldige texture data bevatten. Shaders die deze intensief gebruiken voor visuele input zullen niet correct renderen.
+    * *Uitzondering:* Shaders die `iChannel0` gebruiken om hun *eigen vorige frame* te lezen (voor feedback/trails) zullen niet werken zoals bedoeld, omdat de viewer deze feedback loop niet implementeert.
+* **Audio Input (`iChannelTime`, `iKeyboard` etc.):** Deze gespecialiseerde inputs worden niet ondersteund.
+* **Cubemaps (`samplerCube`):** Niet ondersteund.
+* **3D Textures (`sampler3D`):** Niet ondersteund.
+
+Voor de beste resultaten, gebruik shaders die hun visuals procedureel genereren op basis van coördinaten, tijd, en eventueel muis-input, zonder afhankelijk te zijn van externe texture-inputs of multi-pass rendering.
+
+## Probleemoplossing
+
+* **Shader laadt niet / Zwart scherm:**
+    * Controleer de console output voor GLSL compilatie- of linkfouten.
+    * Zorg ervoor dat de `shaders/default.vert` bestaat en correct is. Als je de `shaders` map of `default.vert` verwijdert, zou de applicatie moeten proberen deze opnieuw aan te maken bij de volgende start.
+    * Controleer of je shader geen niet-ondersteunde features (zoals `iChannel` inputs) gebruikt op een manier die cruciaal is voor de output.
+* **Applicatie crasht niet, maar geen beeld:** Dit kan gebeuren als de default vertex shader niet gecompileerd kon worden. De console zal dit aangeven.
+* **Bestandsdialoog toont geen `.glsl` bestanden:** De filter staat standaard op `*.glsl` en `*.frag`. Als je andere extensies gebruikt, kun je de "*.*" (Alle bestanden) filter selecteren in de dialoog.
+
+## Toekomstige Verbeteringen (Suggesties)
+
+* Ondersteuning voor het laden van simpele 2D textures voor `iChannel0`.
+* Een "Reset Time" of "Pause Time" functionaliteit.
+* Mogelijkheid om uniforms direct via de UI aan te passen.
+* Ondersteuning voor `Buffer A` voor simpele feedback effecten.
+
+Veel plezier met het experimenteren met shaders!
